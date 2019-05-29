@@ -1,0 +1,93 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<link href="mixin-iron-behavior.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+
+<dom-module id="options-element">
+  <template>
+    <style></style>
+    <template is="dom-if" if="[[loadingOptions]]">
+      <paper-spinner active$="[[loadingOptions]]"></paper-spinner>
+    </template>
+    <template is="dom-if" if="[[!loadingOptions]]">
+      <template is="dom-if" if="[[selectOption]]">
+
+        <paper-menu-button>
+          <div slot="dropdown-trigger">Opcion seleccionada: [[selectedOptionValue]]</div>
+          <paper-listbox slot="dropdown-content" selected="1">
+            <template is="dom-repeat" items="[[options]]">
+              <paper-item on-click="realizaSeleccion">[[item]]</paper-item>
+            </template>
+          </paper-listbox>
+        </paper-menu-button>
+      </template>
+      <template is="dom-if" if="[[!selectOption]]">
+        <paper-card>
+          <div class="card-content">
+            <paper-dropdown-menu label="Selecciona una opción">
+              <paper-listbox slot="dropdown-content" selected="1">
+                <template is="dom-repeat" items="[[options]]">
+                  <paper-item on-click="realizaSeleccion">[[item]]</paper-item>
+                </template>
+              </paper-listbox>
+            </paper-dropdown-menu>
+          </div>
+        </paper-card>
+      </template>
+    </template>
+  </template>
+
+  <script>
+    class OptionsElement extends MixinBehavior(Polymer.Element) {
+      static get is() { return 'options-element'; }
+
+      static get properties() {
+        return {
+          selectOption: {
+            type: Boolean,
+            value: false,
+            notify: true,
+          },
+          selectedOptionValue: {
+            type: String,
+          },
+          loadingOptions: {
+            type: Boolean,
+            value: true,
+            notify: true,
+          },
+        };
+      }
+
+      static get observers() {
+        return ['observaLoading(loading)'];
+      }
+
+      observaLoading(valueOptionsLoading) {
+        this.set('loadingOptions', valueOptionsLoading);
+      }
+      connectedCallback() {
+        super.connectedCallback();
+        console.log('dos veces');
+
+        console.log(this.loading);
+        console.log(this.options);
+
+      }
+
+      realizaSeleccion(e) {
+        console.log(e.model);
+        this.set('selectedOptionValue', e.model.item);
+        this.set('selectOption', true);
+      }
+    }
+
+    window.customElements.define(OptionsElement.is, OptionsElement);
+  </script>
+</dom-module>

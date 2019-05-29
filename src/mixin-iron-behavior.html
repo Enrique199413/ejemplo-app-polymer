@@ -1,0 +1,121 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-request.html">
+  <script>
+      const MixinBehavior = Polymer.dedupingMixin(Base => class extends Base {
+        static get properties() {
+          return {
+            loadingAll: {
+              type: Boolean,
+              value: true,
+              notify: true,
+            },
+            loadingCuentas: {
+              type: Boolean,
+              value: true,
+              notify: true,
+            },
+            loadingPersonas: {
+              type: Boolean,
+              value: true,
+              notify: true,
+            },
+            loadingOpciones: {
+              type: Boolean,
+              value: true,
+              notify: true,
+            },
+            persons: {
+              type: Array,
+              value: [],
+              observer: 'observaNuevosDatos',
+              notify: true,
+            },
+            accounts: {
+              type: Array,
+              value: [],
+            },
+            options: {
+              type: Array,
+              value: [],
+            },
+          };
+        }
+
+        connectedCallback() {
+          super.connectedCallback();
+          this.start();
+        }
+
+        observaNuevosDatos(old, newV) {
+          console.log('dentroMixin', old, newV);
+        }
+
+        start() {
+          this.loading = true;
+          /*Promise.all([
+            this.getPersons(),
+            this.getOptions(),
+            this.getAccounts(),
+          ]).then((values) => this.setValues(values));*/
+
+
+          this.accounts = JSON.parse(values[2].response).data;
+          this.options = JSON.parse(values[1].response).data;
+
+          this.getPersons().then(resolve => {
+            this.persons = JSON.parse(resolve.response).data.map((item) => {
+              item.opened = false;
+              item.openedModal = false;
+              return item;
+            });
+            this.notifyPath('persons', this.persons);
+            this.set('loadingCuentas', false);
+          });
+          this.getOptions().then(resolve => {
+
+            this.set('loadingPersonas', false);
+          });
+          this.getAccounts().then(resolve => {
+
+            this.set('loadingOpciones', false);
+          });
+
+        }
+
+
+        setValues(values) {
+
+          this.notifyPath('accounts', this.accounts);
+          this.notifyPath('options', this.options);
+          this.loading = false;
+        }
+
+        getCurrentOptions() {
+          console.log('Camara', this.options);
+          return this.options;
+        }
+
+        createRequest() {
+          let request = document.createElement('iron-request');
+          return request;
+        }
+
+        getAccounts() {
+          return this.sendRequest('http://demo6292426.mockable.io/accounts');
+        }
+        getPersons() {
+          return this.sendRequest('http://demo6292426.mockable.io/persons');
+        }
+        getOptions() {
+          return this.sendRequest('http://slowwly.robertomurray.co.uk/delay/1100/url/http://demo6292426.mockable.io/options');
+        }
+
+        sendRequest(url) {
+          let currentRequest = this.createRequest();
+          currentRequest.send({url: url});
+          return currentRequest.completes;
+        }
+
+
+    });
+  </script>

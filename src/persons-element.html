@@ -1,0 +1,129 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link href="mixin-iron-behavior.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+
+<dom-module id="persons-element">
+  <template>
+    <style></style>
+    <template is="dom-if" if="[[loadingPersons]]">
+      <paper-spinner active$="[[loadingPersons]]"></paper-spinner>
+    </template>
+    <paper-dialog id="personaSeleccionadaModal">
+      <h2>[[personSelected.name.first]] [[personSelected.name.last]]</h2>
+      <div>
+        <paper-input value="{{personSelected.name.first::input}}" label="Nombre"></paper-input>
+        <paper-input value="{{personSelected.name.last::input}}" label="Apellido"></paper-input>
+        <paper-input value="{{personSelected.balance::input}}" label="Balance"></paper-input>
+        <paper-input value="{{personSelected.age::input}}" label="Edad"></paper-input>
+        <paper-checkbox checked="{{personSelected.isDebt::change}}" label="Es deudor"></paper-checkbox>
+        <paper-dropdown-menu label="Selecciona una compañia">
+          <paper-listbox slot="dropdown-content" selected="1">
+            <template is="dom-repeat" items="[[companies]]">
+              <paper-item on-click="cambiaSeleccionCompany">[[item]]</paper-item>
+            </template>
+          </paper-listbox>
+        </paper-dropdown-menu>
+        <paper-input value="{{personSelected.email::input}}" label="Email"></paper-input>
+        <paper-input value="{{personSelected.phone::input}}" label="Phone"></paper-input>
+      </div>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button dialog-confirm autofocus on-click="imprimeEnConsola">Accept</paper-button>
+      </div>
+    </paper-dialog>
+    <template is="dom-repeat" items="{{persons}}">
+      <div>
+        <p on-click="_apachurra">{{item.name.first}} {{item.name.last}} [[item.opened]]</p>
+        <iron-collapse opened="[[item.opened]]">
+          <paper-card>
+            <div class="card-content">
+              <div>Nombre: {{item.name.first}} {{item.name.last}}</div>
+              <div>Balance: {{item.balance}}</div>
+              <div>Edad: {{item.age}}</div>
+              <div>Compañía: {{item.company}}</div>
+              <div>Email: {{item.email}}</div>
+              <div>Phone: {{item.phone}}</div>
+            </div>
+            <div class="card-actions">
+              <paper-button on-click="verDetalle">Ver Detalle</paper-button>
+            </div>
+          </paper-card>
+        </iron-collapse>
+      </div>
+    </template>
+  </template>
+
+  <script>
+    class PersonsElement extends MixinBehavior(Polymer.Element) {
+      static get is() { return 'persons-element'; }
+
+      static get properties() {
+        return {
+          personSelected: {
+            type: Array,
+          },
+          loadingPersons: {
+            type: Boolean,
+            value: true,
+            notify: true,
+          },
+        };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+      }
+
+      static get observers() {
+        return ['observaLoading(loading)'];
+      }
+
+      observaLoading(loadingPersons) {
+        this.set('loadingPersons', loadingPersons);
+      }
+
+      verDetalle(e) {
+        this.set('personSelected', e.model.item);
+        this.set('personSelected.index', e.model.index);
+        this.set('currentSelected', e.model);
+        this.$.personaSeleccionadaModal.open();
+      }
+
+      imprimeEnConsola() {
+        console.log('Estos datos se tienen que actualizar', this.personSelected);
+        console.log(this.currentSelected);
+        this.currentSelected.set('item', this.personSelected);
+      }
+
+      _apachurra(e) {
+        e.model.set('item.opened', !e.model.item.opened);
+        //this.set(`persons.${e.model.index}`, e.model.item);
+        //console.log(this.get(`persons.${e.model.index}`));
+        //this.notifyPath('persons', this.persons);//TODO que show?
+        //e.target.parentNode.children[1].toggle();
+      }
+    }
+
+    window.customElements.define(PersonsElement.is, PersonsElement);
+  </script>
+</dom-module>
